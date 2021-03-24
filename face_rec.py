@@ -6,23 +6,24 @@ import os
 
 
 def f(unknown):
-    img = []
-    img_encoding = []
-    known_face_encodings = []
-    i=0
-    for f in glob.glob(os.path.join("./faces/*.jpg")):
-        img.append(face_recognition.load_image_file("./faces/img{}.jpg".format(i+1)))
-        img_encoding.append(face_recognition.face_encodings(img[i])[0])
-        known_face_encodings.append(img_encoding[i])
-        i = i+1
-
+    known_face_encodings = [] #Get this from a preloaded file to skip the below for loop
+    #with open('./known_faces.txt') as file:
+    #    for line in file:
+    #        print(line)
+    #        break
+    #        inner_list = [elt.strip() for elt in line.split(',')]
+    # in alternative, if you need to use the file content as numbers
+    # inner_list = [int(elt.strip()) for elt in line.split(',')]
+    #        known_face_encodings.append(list(inner_list))
     unknown_image = face_recognition.load_image_file(unknown)
-    unknown_encoding = face_recognition.face_encodings(unknown_image)[0]
+    unknown_encoding = face_recognition.face_encodings(unknown_image)[0] 
     results = face_recognition.compare_faces(known_face_encodings, unknown_encoding, tolerance=0.6) #adjust tolerance parameter until results list shows True for only the image numbers that are part of your desired identity
 
-    #for i in range(len(results)):
-    #    print(i+1, " ", results[i])
+    for i in range(len(results)):
+        print(i+1, " ", results[i])
     return results
+
+
 def test_angie():
     assert f("./faces/img1.jpg") == f("./faces/img2.jpg")
     assert f("./faces/img4.jpg") == f("./faces/img2.jpg")
@@ -45,3 +46,6 @@ idendities = {
     "George": ["img38.jpg", "img39.jpg", "img40.jpg", "img41.jpg"]
     
 }
+
+if __name__ == "__main__":
+    f("./faces/img1.jpg")
