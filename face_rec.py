@@ -47,17 +47,6 @@ def encode_faces():
     file.close()
     return 0
 
-def test_encoding():
-    encode_face()
-    assert True
-def test_angie():
-    assert f("./faces/img1.jpg") == "Angelina"
-    assert f("./faces/img4.jpg") == "Angelina"
-def test_scar():
-    assert f("./faces/img8.jpg") == "Scarlett"
-def test_other():
-    assert f("./faces/img16.jpg") == "Not Angie or Scar"
-
 #for reference   
 idendities = {
     "Angelina": ["img1.jpg", "img2.jpg", "img4.jpg", "img5.jpg", "img6.jpg", "img7.jpg", "img10.jpg", "img11.jpg"],
