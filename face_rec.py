@@ -1,36 +1,64 @@
+from pickle import EMPTY_LIST
+import dlib
 import face_recognition
 import cv2
 import numpy as np
 import glob
 import os
 
-
+def detect_faces(group):
+    path = 'C:/Attendance/demo-main/database'
+    detector = dlib.get_frontal_face_detector()
+    win = dlib.image_window()
+    img = dlib.load_rgb_image(group)
+    dets = detector(img, 1)
+    print("Number of faces detected: {}".format(len(dets)))
+    for i, d in enumerate(dets):
+        crop = img[d.top():d.bottom(), d.left():d.right()]
+        cv2.imwrite(os.path.join(path, 'd{}.jpg'.format(i)), crop)
+    return len(dets)
+    
 def f(unknown):
-    known_face_encodings = [] #Get this from a preloaded file to skip the below for loop
-    #with open('./known_faces.txt') as file:
-    #    for line in file:
-    #        print(line)
-    #        break
-    #        inner_list = [elt.strip() for elt in line.split(',')]
-    # in alternative, if you need to use the file content as numbers
-    # inner_list = [int(elt.strip()) for elt in line.split(',')]
-    #        known_face_encodings.append(list(inner_list))
+    known_face_encoding = []
+    file = open("known_faces.npy", "rb")
+    for f in glob.glob(os.path.join("./faces/*.jpg")):
+        known_face_encoding.append(np.load(file,allow_pickle=True))
     unknown_image = face_recognition.load_image_file(unknown)
     unknown_encoding = face_recognition.face_encodings(unknown_image)[0] 
-    results = face_recognition.compare_faces(known_face_encodings, unknown_encoding, tolerance=0.6) #adjust tolerance parameter until results list shows True for only the image numbers that are part of your desired identity
+    results = face_recognition.compare_faces(known_face_encoding, unknown_encoding, tolerance=0.6) #adjust tolerance parameter until results list shows True for only the image numbers that are part of your desired identity
+    print(results)
+    
+def encode_faces():
+    file = open("known_faces.npy", "wb")
+    i=0
+    img = []
+    img_encoding = []
+    known_face_encodings = []
+    print ("before for loop")
+    print (glob.glob("./faces"))
+    for f in glob.glob(os.path.join("./faces/*.jpg")):
+        print ("in for loop ... ")
+        print (i)
+        img.append(face_recognition.load_image_file(f))
+        img_encoding.append(face_recognition.face_encodings(img[i])[0]) 
+        np.save(file, img_encoding[i])
+        i = i+1
+    print ("after for loop")
+    file.close()
+    return 0
 
-    for i in range(len(results)):
-        print(i+1, " ", results[i])
-    return results
-
-
+def test_encoding():
+    encode_face()
+    assert True
 def test_angie():
-    assert f("./faces/img1.jpg") == f("./faces/img2.jpg")
-    assert f("./faces/img4.jpg") == f("./faces/img2.jpg")
+    assert f("./faces/img1.jpg") == "Angelina"
+    assert f("./faces/img4.jpg") == "Angelina"
 def test_scar():
-    assert f("./faces/img8.jpg") == f("./faces/img47.jpg")
+    assert f("./faces/img8.jpg") == "Scarlett"
+def test_other():
+    assert f("./faces/img16.jpg") == "Not Angie or Scar"
 
-#for reference, not being used for now    
+#for reference   
 idendities = {
     "Angelina": ["img1.jpg", "img2.jpg", "img4.jpg", "img5.jpg", "img6.jpg", "img7.jpg", "img10.jpg", "img11.jpg"],
     "Scarlett": ["img8.jpg", "img9.jpg", "img47.jpg", "img48.jpg", "img49.jpg", "img50.jpg", "img51.jpg"],
@@ -48,4 +76,7 @@ idendities = {
 }
 
 if __name__ == "__main__":
-    f("./faces/img1.jpg")
+    k = detect_faces('./input.jpg') #detect individual faces
+    #encode_faces() #build up repository of facial identities
+    for i in range(k):
+        f("./database/d{}.jpg".format(i)) #match face with identity
